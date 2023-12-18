@@ -1,0 +1,86 @@
+name: helix-p4d
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  schedule:
+    - cron: '0 10 * * *'
+
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  P4DVERSION: ${{ vars.P4DVERSION }}
+  P4NAME: ${{ secrets.P4NAME }}
+  P4TCP: ${{ vars.P4TCP }}
+  P4USER: ${{ secrets.P4USER }}
+  P4PASSWD: ${{ secrets.P4PASSWD }}
+  P4HOME: ${{ vars.P4HOME }}
+  P4ROOT: ${{ vars.P4HOME }}/${{ secrets.P4NAME }}
+  CASE_INSENSITIVE: ${{ vars.CASE_INSENSITIVE }}
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run tests
+        run: |
+            docker build \
+             -t $GITHUB_WORKFLOW \
+             --build-arg P4NAME=$P4NAME \
+             --build-arg P4TCP=$P4TCP \
+             --build-arg P4USER=$P4USER \
+             --build-arg P4PASSWD=$P4PASSWD \
+             --build-arg P4HOME=$P4HOME \
+             --build-arg P4ROOT=$P4ROOT \
+             --build-arg CASE_INSENSITIVE=$CASE_INSENSITIVE \
+             -f ./p4d-build/Dockerfile ./p4d-build
+
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  push:
+    # Ensure test job passes before pushing image.
+    needs: test
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: |
+            docker build \
+             -t $GITHUB_WORKFLOW \
+             --build-arg P4NAME=$P4NAME \
+             --build-arg P4TCP=$P4TCP \
+             --build-arg P4USER=$P4USER \
+             --build-arg P4PASSWD=$P4PASSWD \
+             --build-arg P4HOME=$P4HOME \
+             --build-arg P4ROOT=$P4ROOT \
+             --build-arg CASE_INSENSITIVE=$CASE_INSENSITIVE \
+             -f ./p4d-build/Dockerfile ./p4d-build
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository }}/$GITHUB_WORKFLOW
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          echo IMAGE_ID=$IMAGE_ID
+
+          docker tag $GITHUB_WORKFLOW $IMAGE_ID:$P4DVERSION.$GITHUB_RUN_NUMBER
+          docker push $IMAGE_ID:$P4DVERSION.$GITHUB_RUN_NUMBER
+
+          docker tag $GITHUB_WORKFLOW $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest
