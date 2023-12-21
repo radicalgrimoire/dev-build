@@ -5,6 +5,7 @@ LABEL maintainer "ueno.s <ueno.s@gamestudio.co.jp>"
 RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Download, compile, and install OpenSSH
