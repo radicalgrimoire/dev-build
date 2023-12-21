@@ -8,8 +8,6 @@ RUN apt-get upgrade -y && apt-get update -y && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN which openssl
-
 # Download, compile, and install OpenSSL
 WORKDIR /usr/local/src
 RUN wget https://www.openssl.org/source/openssl-3.2.0.tar.gz \
