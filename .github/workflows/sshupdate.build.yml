@@ -1,18 +1,11 @@
-name: p4proxy
+name: sshupdate
 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  schedule:
-    - cron: '0 10 * * *'
-
-  pull_request:
-    branches: [ "main" ]
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 env:
-  P4PVERSION: ${{ vars.P4PVERSION }}
+  VERSION: ${{ vars.VERSION }}
   USER: ${{ vars.USER }}
   PASSWD: ${{ secrets.PASSWD }}
   P4HOME: ${{ vars.P4HOME }}
@@ -30,11 +23,7 @@ jobs:
         run: |
             docker build \
              -t $GITHUB_WORKFLOW \
-             --build-arg USER=$USER \
-             --build-arg PASSWD=$PASSWD \
-             --build-arg P4HOME=$P4HOME \
-             --build-arg P4PLOGDIR=$P4PLOGDIR \
-             -f ./p4proxy-build/Dockerfile ./p4proxy-build
+             -f ./ssh-update-test/Dockerfile ./ssh-update-test
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -52,11 +41,7 @@ jobs:
         run: |
             docker build \
               -t $GITHUB_WORKFLOW \
-              --build-arg USER=$USER \
-              --build-arg PASSWD=$PASSWD \
-              --build-arg P4HOME=$P4HOME \
-              --build-arg P4PLOGDIR=$P4PLOGDIR \
-             -f ./p4proxy-build/Dockerfile ./p4proxy-build
+              -f ./ssh-update-test/Dockerfile ./ssh-update-test
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
