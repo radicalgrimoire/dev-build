@@ -18,7 +18,8 @@ WORKDIR /usr/local/src/openssl-3.2.0
 RUN ./config \
     && make \
     && make install \
-    && ldconfig
+    && ldconfig \
+    && ln -s /usr/local/bin/openssl /usr/bin/openssl
 
 RUN which openssl
 RUN openssl version
