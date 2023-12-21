@@ -6,7 +6,19 @@ RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
     zlib1g-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Download, compile, and install OpenSSL
+WORKDIR /usr/local/src
+RUN wget https://www.openssl.org/source/openssl-1.1.1l.tar.gz \
+    && tar -zxvf openssl-1.1.1l.tar.gz \
+    && rm openssl-1.1.1l.tar.gz
+
+WORKDIR /usr/local/src/openssl-1.1.1l
+RUN ./config \
+    && make \
+    && make install
 
 # Download, compile, and install OpenSSH
 WORKDIR /usr/local/src
