@@ -30,7 +30,7 @@ RUN wget http://mirror.exonetric.net/pub/OpenBSD/OpenSSH/portable/openssh-9.6p1.
     && rm openssh-9.6p1.tar.gz
 
 WORKDIR /usr/local/src/openssh-9.6p1
-RUN ./configure --with-kerberos5 --with-md5-passwords --with-pam --with-selinux --with-privsep-path=/var/lib/sshd/ --sysconfdir=/etc/ssh --with-ssl-dir=/usr/local/ssl \
+RUN ./configure --without-openssl-header-check \
     && make \
     && make install
 
