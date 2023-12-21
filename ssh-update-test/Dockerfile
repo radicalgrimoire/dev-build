@@ -3,7 +3,10 @@ LABEL maintainer "ueno.s <ueno.s@gamestudio.co.jp>"
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y \
-    wget build-essential zlib1g-dev libssl-dev libpam0g-dev libselinux1-dev libkrb5-dev \
+    wget openssl \
+    build-essential zlib1g-dev libssl-dev libpam0g-dev libselinux1-dev libkrb5-dev \
+    zlib1g-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN which openssl
@@ -14,9 +17,11 @@ RUN wget https://www.openssl.org/source/openssl-3.2.0.tar.gz \
     && tar -zxvf openssl-3.2.0.tar.gz \
     && rm openssl-3.2.0.tar.gz
 
-
 WORKDIR /usr/local/src/openssl-3.2.0
-RUN ./config && make && make install && ldconfig && openssl version
+RUN ./config \
+    && make \
+    && make install \
+    && ldconfig
 
 # Download, compile, and install OpenSSH
 WORKDIR /usr/local/src
